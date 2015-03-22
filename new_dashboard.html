@@ -1,71 +1,3 @@
-<?php
-//include('getColumns.php');
-include('../config.php');
-/*include('../' . mnminclude . 'html1.php');
-include('../' . mnminclude . 'link.php');
-include('../' . mnminclude . 'tags.php');
-include('../' . mnminclude . 'user.php');
-include('../' . mnminclude . 'smartyvariables.php');*/
-include('Canvas.php');
-/* * **************
-  force login
- * ************** */
-
-global $current_user;
-if ($current_user->authenticated != TRUE) {
-    echo "not log in";
-    echo $_SERVER['REQUEST_URI'];
-    header("Location: " . $my_base_url . $my_pligg_base . "/login.php?return=" . $_SERVER['REQUEST_URI']);
-}
-/* * *********************	
-  get dataset title No
- * ********************* */
-$dataset = json_decode($_POST['dataset']);
-//var_dump($dataset);
-$title = $_POST['title'];
-$where = $_GET['where'];
-$sid = $_POST['sid'];
-$tname = $_POST['tableName'];
-$vid = $_GET['vid'];
-$userid = $current_user->user_id;
-/*$sqlVis = "SELECT * FROM colfusion_visualization WHERE userid = '" . $userid . "' ";
-if ($titleNum) {
-    $sqlVis .= " AND titleno = '" . $titleNum . "' ";
-} else {
-    $titleNum = 0;
-}
-$rstVis = $db->get_results($sqlVis);
-$visGadgets = array();
-foreach ($rstVis as $row) {
-    $visGadgets[] = $row;
-}*/
-
-/* * ***************
-  get column names
- * **************** */
-//$res = $db->query("call doJoin('" . $titleNum . "')");
-
-$columns = array("ID", "la", "long", "dvalue");
-
-/* * *********************	
-  get sql style and excel style table columns
- * ********************* */
-//sql style table columns
-$sql_columns = array();
-$column_types = array();
-
-//excel style table columns
-$excel_columns = array();
-
-//columns for charts like pie, combo
-$chart_columns = array();
-
-//date columns
-$date_columns = array();
-
-$chart_columns[] = "Location";
-?>
-
 <html lang="en">
     <head>
         <meta charset="utf-8">
@@ -93,9 +25,6 @@ $chart_columns[] = "Location";
                 vertical-align: top;
             }
         </style>
-        <script>
-            var my_pligg_base = '<?php echo $my_pligg_base; ?>';
-        </script>
 
         <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
         <script type="text/javascript" src="js/bootstrap.min.js"></script>	
@@ -113,8 +42,8 @@ $chart_columns[] = "Location";
         <!-- styles and functions for table -->
         <link rel="stylesheet" href="css/googleTableCSS.css" />
 
-        <link rel="stylesheet" href="<?php echo $my_pligg_base; ?>/css/typeahead.js-bootstrap.css">
-        <link rel="stylesheet" href="<?php echo $my_pligg_base; ?>/css/addRelationship.css">
+<!--         <link rel="stylesheet" href="<?php echo $my_pligg_base; ?>/css/typeahead.js-bootstrap.css">
+        <link rel="stylesheet" href="<?php echo $my_pligg_base; ?>/css/addRelationship.css"> -->
 
         <script type="text/javascript" src="https://www.google.com/jsapi"></script>
         <script type="text/javascript" src="js/tableJS.js"></script>
@@ -136,8 +65,8 @@ $chart_columns[] = "Location";
         <!-- styles and functions for motion chart -->
         <script type="text/javascript" src="js/motionJS.js"></script>
 
-        <script type="text/javascript" src="<?php echo $my_pligg_base; ?>/javascripts/hogan.min.js"></script>
-        <script type="text/javascript" src="<?php echo $my_pligg_base; ?>/javascripts/typeahead.min.js"></script>
+ <!--        <script type="text/javascript" src="<?php echo $my_pligg_base; ?>/javascripts/hogan.min.js"></script>
+        <script type="text/javascript" src="<?php echo $my_pligg_base; ?>/javascripts/typeahead.min.js"></script> -->
         <script type="text/javascript" src="js/datasetTypeahead.js"></script>
     </head>
     <body onload="showHint('', 1);
