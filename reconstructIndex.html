@@ -12,12 +12,22 @@
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
 	<link rel="stylesheet" href="newCss/newDashboard.css">	
 
+
     <!-- script -->
     <script src="https://code.jquery.com/jquery-2.1.3.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
     <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+    <!-- PLUG-IN -->
     <!-- http://bootboxjs.com/ -->
    	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.3.0/bootbox.min.js"></script>
+
+   	<!-- datatable jquery -->
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.5/css/jquery.dataTables.min.css">
+	<script src="https://cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
+	
+
+
 </head>
 <body>
 	<!-- nav bar -->
@@ -40,7 +50,7 @@
 				<li><a href="#"></a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
-				<li><a href="#">Welcome Haoda</a></li>
+				<li><a href="#">Welcome <div id="userName"></div></a></li>
 			</ul>
 		</div><!-- /.navbar-collapse -->
 	</nav>
@@ -77,8 +87,17 @@
 			</div>
 
 			<div class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
-				<div class="well canvas_table">
-					ddd
+				<div class="well">
+					<table id="canvas-table" class="stripe row-border hover order-column">
+						<thead>
+							<tr>
+								<th>vid</th>
+								<th>name</th>
+								<th>mdate</th>
+								<th>cdate</th>
+							</tr>
+						</thead>
+					</table>
 				</div>
 			</div>
 
@@ -256,18 +275,26 @@
 			{
 				vid: "1", 
 				name: "canvas1",
-				mdate: "2015-03-18 17:34:56",
-				cdate: "2015-03-18 17:34:56"
+				mdate: "2015-01-08 17:34:56",
+				cdate: "2015-02-13 17:34:56"
 			},
 			{
 				vid: "2", 
 				name: "canvas2",
 				mdate: "2015-03-18 17:34:56",
 				cdate: "2015-03-18 17:34:56"
+			},
+			{
+				vid: "3", 
+				name: "testCanvas",
+				mdate: "2015-02-08 17:34:56",
+				cdate: "2014-12-21 17:34:56"
 			}
 		]
 	};
 
+
+	$('#userName').html(userJsonObj.user_names);
 	//present story respository
 	var storyArr = userJsonObj.story;
 	for (var i = 0; i < storyArr.length; i++) {
@@ -331,7 +358,17 @@
 		}
 	});
 
-
+	//canvas table
+	$('#canvas-table').DataTable({
+		paging: false,
+		data: userJsonObj.canvas,
+		columns: [
+	        { data: 'vid' },
+	        { data: 'name' },
+	        { data: 'mdate' },
+	        { data: 'cdate' }
+    	]
+	});
 
 </script>
 </html>
