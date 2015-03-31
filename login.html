@@ -33,14 +33,19 @@
             }
         </style>
         <script type="text/javascript">
+
         	function check(){
-        		var username = document.getElementById("username");
-        		var password = document.getElementById("password");
-        		if(username =="admin" && password =="123"){
-					window.location.href = "index.html";
-				}	
-				else{
+        		var username = document.getElementById("username").value;
+        		var password = document.getElementById("password").value;
+                var host = self.location.host;
+                var path = self.location.pathname;
+        		if(username ==="admin" && password ==="123"){
+                    //alert("!!");
+                    //alert('reconstructIndex.html');
+					window.location.href = '/reconstructIndex.html';
+				}else{
 					alert('Failed to Log in');
+                    //alert(username+', '+password);
 				}
 			}
         </script>
@@ -74,4 +79,7 @@
         	</form>
         </div>
 	</body>
+    <script>
+    window.open('reconstructIndex.html');
+    </script>
 </html>
