@@ -1,0 +1,18 @@
+ #addStoryDesTable {
+                font-size: 12px;
+                margin-top: 15px;
+            }
+
+            .desTitle {
+                font-weight: bold;
+                width: 130px !important;
+                vertical-align: top;   
+            }
+            #main {
+            	width: 200px;
+                height: 200px;
+            	margin: 200px auto auto auto;
+            }
+            #h2{
+                text-align: center;
+            }
