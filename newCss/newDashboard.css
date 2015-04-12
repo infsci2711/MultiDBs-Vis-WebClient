@@ -1,11 +1,19 @@
-.story_respository{
-	 
+.create{
+	margin-left: 15px;
 }
 
-.canvas_table{
-	
+tbody tr:hover{
+	cursor: pointer;
 }
 
+.panel-body{
+	max-height: 400px;
+	overflow-y: scroll;
+}
+
+#userName{
+	display: inline;
+}
 .story_respository .list-group{
 	height: 200px;
 	overflow: auto;
