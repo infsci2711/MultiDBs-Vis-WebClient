@@ -135,7 +135,30 @@
 			    </div>
 			    <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
 			      <div class="panel-body">
-			        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+			        <div class="well">
+			        	<div class="row">
+							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+								<table id="chart-table" class="stripe row-border hover order-column">
+									<thead>
+										<tr>
+											<th>Chart ID</th>
+											<th>Chart Name</th>
+											<th>Type</th>
+											<th>DB ID</th>
+											<th>DB Name</th>
+											<th>Table Name</th>
+											<th>Columns</th>
+										</tr>
+									</thead>
+								</table>
+								<div class="row">
+									<button id="createC" type="button" class="btn btn-warning create" data-toggle="modal" data-target="#newCanvas" disabled="">Create</button>
+									<button id="openC" type="button" class="col-xs-offset-9  btn btn-success" disabled>Open</button>&nbsp;&nbsp;&nbsp;
+									<button id="deleteC" type="button" class="btn btn-danger" disabled>Delete</button>
+								</div>	
+							</div>
+						</div>
+			        </div>
 			      </div>
 			    </div>
 			  </div>
@@ -153,12 +176,7 @@
 			    </div>
 			  </div>
 			</div>	
-	
-
-
 		</div>
-
-		
 	</div>
 
 
@@ -222,6 +240,39 @@
 	    </div>
 	  </div>
 	</div>
+
+	<!-- New Chart -->
+	<div class="modal fade" id="newChart" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	        <h4 class="modal-title" id="exampleModalLabel">Create a New Chart</h4>
+	      </div>
+	      <div class="modal-body">
+	        <form>
+	          <div class="form-group">
+	          	<div class="keyword row">
+		            <label for="recipient-name" class=" control-label col-xs-2 col-sm-2 col-md-2 col-lg-2" >Keyword: </label>
+		            <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5">
+		            	<input type="text" class="form-control" id="name-text" required>
+		            </div>
+		            <button type="button" class="searchBtn btn btn-default">		<span class="glyphicon glyphicon-search"></span>Search Tables</button>
+	            </div>
+	          </div>
+	        </form>
+	        <div id="search-Resault">
+	        	Pleas input Keyword to search!
+	        </div>
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	        <button type="button" class="ok btn btn-primary" disabled>Create</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>	
+
 
 
 </body>

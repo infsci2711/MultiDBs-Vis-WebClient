@@ -43,6 +43,9 @@ $('#canvas-table').DataTable({
 $('#story-table').DataTable({
 	paging: false,
 });
+$('#chart-table').DataTable({
+	paging: false,
+});
 
 $(document).on('click', '#collapseOne tbody tr', function(event) {
 	event.preventDefault();
@@ -71,7 +74,7 @@ $('#openV').click(function(event) {
 	var canvasId = $('#collapseOne .selected').children().first().html();
 	//alert(canvasId);
 	$('#createS').removeAttr('disabled');
-	$('#collapseOne').collapse('toggle');
+	$('.panel-collapse').collapse('hide');
 	$('#collapseTwo').collapse('show');
 
 	//use ajax to get stories by canvasId
@@ -93,7 +96,7 @@ $('#openV').click(function(event) {
 			}
 		]
 	};
-	$('#headingTwo h4').html('Story of <b>[Canvas id: '+canvasObj.vid+', Canvas Name: '+canvasObj.canvasName+']</b>');
+	$('#headingTwo h4').html('<b>Story</b> of [Canvas id: '+canvasObj.vid+', Canvas Name: '+canvasObj.canvasName+']');
 
 	$('#story-table').DataTable().destroy();//destory the original table first
 	$('#story-table').DataTable({
@@ -127,9 +130,51 @@ $(document).on('click', '#collapseTwo tbody tr', function(event) {
 
 $('#openS').click(function(event) {
 	var storyId = $('#collapseTwo .selected').children().first().html();
-	//alert("Open sid "+storyId);
-	
+	var did = $('#collapseTwo .selected').children().eq(1).html();
+	var tname = $('#collapseTwo .selected').children().eq(3).html();
 
+	//alert("Open sid "+storyId);
+	$('#headingThree h4').html('<b>Chart</b> of [Story '+storyId+', did: '+did+', tname: '+tname+']');
+	$('.panel-collapse').collapse('hide');
+	$('#collapseThree').collapse('show');
+
+	//AJAX to get CHART of this STORY
+	var chartObj = [
+		{
+			cid: 1,
+			cname: "PieChart1",
+			type: "Pie",
+			did: 204,
+			dname: "class2",
+			tname: "teacher",
+			col: "name, age"
+		},
+		{
+			cid: 2,
+			cname: "LineChart1",
+			type: "Line",
+			did: 204,
+			dname: "class2",
+			tname: "teacher",
+			col: "name, age"
+		},
+	];
+
+	$('#chart-table').DataTable().destroy();//destory the original table first
+	$('#chart-table').DataTable({
+		paging: false,
+		data: chartObj,
+		columns: [
+			{data: "cid"},
+			{data: "cname"},
+			{data: "type"},
+			{data: "did"},
+			{data: "dname"},
+			{data: "tname"},
+			{data: "col"}
+		]
+	});
+	$('#createC').removeAttr('disabled');
 }); 
 
 $('#deleteS').click(function(event) {
@@ -137,12 +182,19 @@ $('#deleteS').click(function(event) {
 	alert("Delete sid "+storyId);
 });
 
+//STORY->CHART
+$(document).on('click', '#collapseThree tbody tr', function(event) {
+	event.preventDefault();
+	$('.selected').removeClass('selected');
+	$(this).addClass('selected');
+	$('#openC').removeAttr('disabled');
+	$('#deleteC').removeAttr('disabled');
+});
+
 
 //KEYWORD SEARCH
 $('.keyword .searchBtn').click(function(event) {
-	/* Act on the event */
 	$('#newStory .ok').attr('disabled', 'disabled');
-
 
 	var searchText = $('.keyword input').val();
 	if ($.trim(searchText).length!=0) {
@@ -159,8 +211,7 @@ $('.keyword .searchBtn').click(function(event) {
 				tname: "professors"
 			}
 		];
-		
-		
+			
 		$('#search-Resault').html('');
 		$('#search-Resault').html('<table id="keyword-table" class="stripe row-border hover order-column"><thead><tr><th>DB ID</th><th>DB Name</th><th>Table Name</th></tr></thead></table>');
 		$('#keyword-table').DataTable({
