@@ -1,7 +1,10 @@
 //get all data about this User
 //This part should use ajax
 //
-//
+
+
+
+
 //USER->CANVAS
 var userJsonObj = {
 	userId: "23",
@@ -29,6 +32,7 @@ var userJsonObj = {
 	]
 };
 $('#userName').html(userJsonObj.user_names);
+
 
 //INITIAL tables
 $('#canvas-table').DataTable({
@@ -84,15 +88,15 @@ $('#openV').click(function(event) {
 		story:[
 			{
 				sid: 1,
-				did: 203,
-				dname: "class1",
-				tname: "student"
+				did: 1,
+				dname: "group1",
+				tname: "metaStore"
 			},
 			{
 				sid: 2,
 				did: 204,
 				dname: "class2",
-				tname: "teacher"
+				tname: "table"
 			}
 		]
 	};
@@ -128,11 +132,18 @@ $(document).on('click', '#collapseTwo tbody tr', function(event) {
 	$('#deleteS').removeAttr('disabled');
 });
 
+var selectedStoryId;
+var selectedDid;
+var selectedTname;
+
 $('#openS').click(function(event) {
 	var storyId = $('#collapseTwo .selected').children().first().html();
 	var did = $('#collapseTwo .selected').children().eq(1).html();
 	var tname = $('#collapseTwo .selected').children().eq(3).html();
 
+	selectedStoryId = storyId;
+	selectedDid = did;
+	selectedTname = tname;
 	//alert("Open sid "+storyId);
 	$('#headingThree h4').html('<b>Chart</b> of [Story '+storyId+', did: '+did+', tname: '+tname+']');
 	$('.panel-collapse').collapse('hide');
@@ -143,17 +154,17 @@ $('#openS').click(function(event) {
 		{
 			cid: 1,
 			cname: "PieChart1",
-			type: "Pie",
-			did: 204,
+			type: "pie",
+			did: 1,
 			dname: "class2",
 			tname: "teacher",
 			col: "name, age"
 		},
 		{
 			cid: 2,
-			cname: "LineChart1",
-			type: "Line",
-			did: 204,
+			cname: "BarChart1",
+			type: "bar",
+			did: 1,
 			dname: "class2",
 			tname: "teacher",
 			col: "name, age"
@@ -182,6 +193,9 @@ $('#deleteS').click(function(event) {
 	alert("Delete sid "+storyId);
 });
 
+
+
+
 //STORY->CHART
 $(document).on('click', '#collapseThree tbody tr', function(event) {
 	event.preventDefault();
@@ -190,6 +204,122 @@ $(document).on('click', '#collapseThree tbody tr', function(event) {
 	$('#openC').removeAttr('disabled');
 	$('#deleteC').removeAttr('disabled');
 });
+
+$('#createC').click(function(event) {
+	//alert(selectedDid+" "+selectedTname);
+	
+	//AJAX to METASTORE to get ALL COLUMNS
+	var urlToMeta = "http://54.152.26.131:7654/datasources/"+selectedDid+"/"+selectedTname+"/columns";
+
+	var columnsObj = [
+		{"columnName":"ID"},
+		{"columnName":"DBtype"},
+		{"columnName":"IPAddress"},
+		{"columnName":"port"},
+		{"columnName":"username"},
+		{"columnName":"password"},
+		{"columnName":"DBname"},
+		{"columnName":"title"},
+		{"columnName":"description"}
+	];
+
+	$('#selectType').change(function(event) {
+		var type = $('#selectType').val();
+		$('#col1').html('');
+		$('#col2').html('');
+		if (type=='nothing') {
+			
+		}else if (type!='map') {
+			$('#FG3').hide();
+			for (var i = 0; i < columnsObj.length; i++) {
+				$('#col1').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
+				$('#col2').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
+			}
+		}else{//map chart
+			$('#FG3').show();
+			for (var i = 0; i < columnsObj.length; i++) {
+				$('#col1').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
+				$('#col2').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
+				$('#col3').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
+			}
+		}
+	});
+});
+
+$('#newChart .ok').click(function(event) {
+		var chartName = $('#newChart .name').val();
+		var type = $('#selectType').val();
+		var col1 = $('#col1').val();
+		var col2 = $('#col2').val();
+		var col3 = $('#col3').val();
+
+		if ($.trim(chartName)!=0&&type!='nothing'&&col1!=col2&&col2!=col3&&col3!=col1) {
+			//AJAX to PRESTO to get DATA of COLUMNS
+			var dataObj = { 
+				schema: {
+					columnNames: ["pizza", "slice"]
+				},
+				data: [
+					{row: ["Beef",4]},
+					{row: ["Mushroom",5]},
+					{row: ["Fish",10]},
+					{row: ["Fruit",3]}
+				]
+			};
+
+			$('#collapseFour').collapse('show');
+			if (type=='pie') {
+				//alert("!");
+				showPieChart(dataObj,chartName);
+			}else if (type=='bar') {
+				showBarChart(dataObj,chartName);
+			}else if (type=='column') {
+				showColumnChart(dataObj,chartName);
+			}else if (type=='area') {
+				showAreaChart(dataObj,chartName);
+			}
+			
+
+			$('#newChart').modal('hide');
+		}else{
+			$('#newChart .name').focus();
+		}
+});
+
+$('#openC').click(function(event) {
+	var did = $('#collapseThree .selected').children().eq(3).html();
+	var tname = $('#collapseThree .selected').children().eq(5).html();
+	var columns = $('#collapseThree .selected').children().eq(6).html();
+	var chartName = $('#collapseThree .selected').children().eq(1).html();
+	var type = $('#collapseThree .selected').children().eq(2).html();
+
+	//AJAX send columns, did.tname to PRESTO to get DATA
+	var dataObj = { 
+		schema: {
+			columnNames: ["pizza", "slice"]
+		},
+		data: [
+			{row: ["Beef",4]},
+			{row: ["Mushroom",5]},
+			{row: ["Fish",10]},
+			{row: ["Fruit",3]}
+		]
+	};	
+
+	$('#collapseFour').collapse('show');
+	if (type=='pie') {
+		showPieChart(dataObj,chartName);
+	}else if (type=='bar') {
+		showBarChart(dataObj,chartName);
+	}else if (type=='column') {
+		showColumnChart(dataObj,chartName);
+	}else if (type=='area') {
+		showAreaChart(dataObj,chartName);
+	}
+	
+});
+
+
 
 
 //KEYWORD SEARCH
@@ -250,4 +380,113 @@ $('.keyword .searchBtn').click(function(event) {
 });
 
 
+
+
+//GOOGLE CHART FUNCTIONS
+var chartCounter = 0;
+
+function showPieChart(tableData, chartName){
+	var array = [];
+	array.push(tableData.schema.columnNames);
+	for (var i = 0; i < tableData.data.length; i++) {
+		array.push(tableData.data[i].row);
+	}
+	//console.log(array);
+	var data = google.visualization.arrayToDataTable(array);
+	var option = {
+		is3D: true,
+		title: chartName
+	};
+
+	$('#chart_div').append('<div id="chart'+chartCounter+'" class="chartContainer source ui-state-default"></div>');
+	$('#chart'+chartCounter).draggable({
+		appendTo: '#chart_div',	
+		grid: [ 50, 20 ]
+	});
+
+	var chart = new google.visualization.PieChart(document.getElementById('chart'+chartCounter));
+    chart.draw(data, option);
+    $('#chart'+chartCounter).focus();
+    chartCounter++;
+
+
+}
+
+
+
+function showBarChart(tableData, chartName){
+	var array = [];
+	array.push(tableData.schema.columnNames);
+	for (var i = 0; i < tableData.data.length; i++) {
+		array.push(tableData.data[i].row);
+	}
+	//console.log(array);
+	var data = google.visualization.arrayToDataTable(array);
+	var option = {
+		title: chartName,
+
+	};
+
+	$('#chart_div').append('<div id="chart'+chartCounter+'" class="chartContainer"></div>');
+	$('#chart'+chartCounter).draggable({
+		appendTo: '#chart_div',	
+		grid: [ 50, 20 ]	
+	});
+
+	var chart = new google.visualization.BarChart(document.getElementById('chart'+chartCounter));
+    chart.draw(data, option);
+    chartCounter++;
+}
+
+function showColumnChart(tableData, chartName){
+	var array = [];
+	array.push(tableData.schema.columnNames);
+	for (var i = 0; i < tableData.data.length; i++) {
+		array.push(tableData.data[i].row);
+	}
+	//console.log(array);
+	var data = google.visualization.arrayToDataTable(array);
+	var option = {
+		title: chartName,
+	};
+
+	$('#chart_div').append('<div id="chart'+chartCounter+'" class="chartContainer"></div>');
+	$('#chart'+chartCounter).draggable({
+		appendTo: '#chart_div',
+		grid: [ 50, 20 ]		
+	});
+
+	var chart = new google.visualization.ColumnChart(document.getElementById('chart'+chartCounter));
+    chart.draw(data, option);
+    chartCounter++;
+}
+
+function showAreaChart(tableData, chartName){
+	var array = [];
+	array.push(tableData.schema.columnNames);
+	for (var i = 0; i < tableData.data.length; i++) {
+		array.push(tableData.data[i].row);
+	}
+	//console.log(array);
+	var data = google.visualization.arrayToDataTable(array);
+	var option = {
+		title: chartName,
+	};
+
+	$('#chart_div').append('<div id="chart'+chartCounter+'" class="chartContainer"></div>');
+	$('#chart'+chartCounter).draggable({
+		appendTo: '#chart_div',	
+		grid: [ 50, 20 ]
+	});
+
+	var chart = new google.visualization.AreaChart(document.getElementById('chart'+chartCounter));
+    chart.draw(data, option);
+    chartCounter++;
+
+
+}
+
+$('#clearChart').click(function(event) {
+	$('#chart_div').html('');
+});
 
