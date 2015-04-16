@@ -1,25 +1,6 @@
 var SERVER_IP = "http://54.173.71.235:7654";
 var USER_ID = 1;
-console.log({"cid":3,"columns":"name,population","did":"24","dname":"vistest","storyVM":{"canvasVM":{"cdate":"2015-04-15T17:37:05","mdate":"2015-04-15T17:37:05","name":"zou","privilege":0,"user":{"canvasSet":[],"userId":1,"userNames":"user1"},"vid":14},"chartVMSet":[],"did":"24","dname":"vistest","sid":8,"tname":"country"},"tname":"country","type":"pie"});
 
-// var canvasJsonObj = [
-// 	{
-// 		"cdate":"2015-04-12T21:56:09",
-// 		"mdate":"2015-04-12T21:56:09",
-// 		"name":"test2",
-// 		"privilege":0,
-// 		"user":{"canvasSet":[],"userId":1,"userNames":"user1"},
-// 		"vid":11
-// 	},
-// 	{
-// 		"cdate":"2015-04-15T17:37:05",
-// 		"mdate":"2015-04-15T17:37:05",
-// 		"name":"zou",
-// 		"privilege":0,
-// 		"user":{"canvasSet":[],"userId":1,"userNames":"user1"},
-// 		"vid":14
-// 	}
-// ];
 
 //USER->CANVAS
 
@@ -171,6 +152,11 @@ $('#openS').click(function(event) {
 		});
 	});	
 
+	//clear new chart modal
+	$('#selectType').val('nothing');
+	$('#col1').html('');
+	$('#col2').html('');
+
 	$('#createC').removeAttr('disabled');
 }); 
 
@@ -205,6 +191,7 @@ $(document).on('click', '#collapseThree tbody tr', function(event) {
 	$('#deleteC').removeAttr('disabled');
 });
 
+//Create CHART
 $('#createC').click(function(event) {
 	//alert(selectedDid+" "+selectedTname);
 	//$('#selectType').val('nothing');
@@ -236,6 +223,7 @@ $('#createC').click(function(event) {
 	});
 });
 
+//Create Chart
 $('#newChart .ok').click(function(event) {
 	var type = $('#selectType').val();
 	var col1 = $('#col1').val();
@@ -256,31 +244,38 @@ $('#newChart .ok').click(function(event) {
 				}).draw();
 		});
 
+		var columns = col1+','+col2;
 		//AJAX to PRESTO to get DATA of COLUMNS
-		var dataObj = { 
-			schema: {
-				columnNames: ["pizza", "slice"]
-			},
-			data: [
-				{row: ["Beef",4]},
-				{row: ["Mushroom",5]},
-				{row: ["Fish",10]},
-				{row: ["Fruit",3]}
-			]
-		};
+		var urlToPresto = "http://54.174.80.167:7654/Query/"
+		var query = 'select '+columns+' from '+selectedDid+'.'+selectedTname;
+		//alert(query);
+		$.ajax({
+	        url: urlToPresto,
+	        type: 'PUT',
+	        dataType: 'json',
+	        data: '{"query": "'+query+'"}',
+	        contentType: "application/json",
+	        crossDomain: true,
+	        success: function(dataObj) {
+	            console.log(dataObj);
+	            $('#collapseFour').collapse('show');
+				if (type=='pie') {
+					showPieChart(dataObj,chartName);
+				}else if (type=='bar') {
+					showBarChart(dataObj,chartName);
+				}else if (type=='column') {
+					showColumnChart(dataObj,chartName);
+				}else if (type=='area') {
+					showAreaChart(dataObj,chartName);
+				}
+	        },
+	        error: function(data) {
+	           alert("Cannot get data from Presto!");
+	        }
+	    });
 
-		var chartName = "zou";
-		$('#collapseFour').collapse('show');
-		if (type=='pie') {
-			//alert("!");
-			showPieChart(dataObj,chartName);
-		}else if (type=='bar') {
-			showBarChart(dataObj,chartName);
-		}else if (type=='column') {
-			showColumnChart(dataObj,chartName);
-		}else if (type=='area') {
-			showAreaChart(dataObj,chartName);
-		}			
+
+			
 		$('#newChart').modal('hide');
 	}else{
 		alert("Check you input!");
@@ -290,37 +285,59 @@ $('#newChart .ok').click(function(event) {
 
 $('#openC').click(function(event) {
 	var did = $('#collapseThree .selected').children().eq(2).html();
-	var tname = $('#collapseThree .selected').children().eq(3).html();
+	var tname = $('#collapseThree .selected').children().eq(4).html();
 	var columns = $('#collapseThree .selected').children().eq(5).html();
 	var chartName = "Chart "+ $('#collapseThree .selected').children().eq(0).html();
 	var type = $('#collapseThree .selected').children().eq(1).html();
-	//AJAX send columns, did.tname to PRESTO to get DATA
-	var dataObj = { 
-		schema: {
-			columnNames: ["pizza", "slice"]
-		},
-		data: [
-			{row: ["Beef",4]},
-			{row: ["Mushroom",5]},
-			{row: ["Fish",10]},
-			{row: ["Fruit",3]}
-		]
-	};	
-
-	$('#collapseFour').collapse('show');
-	if (type=='pie') {
-		showPieChart(dataObj,chartName);
-	}else if (type=='bar') {
-		showBarChart(dataObj,chartName);
-	}else if (type=='column') {
-		showColumnChart(dataObj,chartName);
-	}else if (type=='area') {
-		showAreaChart(dataObj,chartName);
-	}
 	
+	//AJAX send columns, did.tname to PRESTO to get DATA
+	var urlToPresto = "http://54.174.80.167:7654/Query/"
+	var query = 'select '+columns+' from '+did+'.'+tname;
+	//alert(query);
+
+	$.ajax({
+        url: urlToPresto,
+        type: 'PUT',
+        dataType: 'json',
+        data: '{"query": "'+query+'"}',
+        contentType: "application/json",
+        crossDomain: true,
+        success: function(dataObj) {
+            console.log(dataObj);
+            $('#collapseFour').collapse('show');
+			if (type=='pie') {
+				showPieChart(dataObj,chartName);
+			}else if (type=='bar') {
+				showBarChart(dataObj,chartName);
+			}else if (type=='column') {
+				showColumnChart(dataObj,chartName);
+			}else if (type=='area') {
+				showAreaChart(dataObj,chartName);
+			}
+        },
+        error: function(data) {
+           alert("Cannot get data from Presto!");
+        }
+    });
 });
 
-
+//delete CHART
+$('#deleteC').click(function(event) {
+	var chartId = $('#collapseThree .selected').children().first().html();
+	bootbox.confirm("Are you sure to delete this Chart?", function(result){
+		if (result==true) {
+			$.getJSON(SERVER_IP+'/Visualization/chart/delete/'+chartId, function(data) {
+				//ADD created CANVAS to canvas tables
+				console.log(data);
+				if (data.flag=="S") {//delete sucessful
+					$('#chart-table').DataTable().row($('#collapseThree .selected')).remove().draw();
+				}else{
+					alert("Delete chart "+chartId+" unsuccessfully!!");
+				};
+			});
+		}
+	});
+});
 
 
 //KEYWORD SEARCH
@@ -397,7 +414,10 @@ function showPieChart(tableData, chartName){
 	var array = [];
 	array.push(tableData.schema.columnNames);
 	for (var i = 0; i < tableData.data.length; i++) {
-		array.push(tableData.data[i].row);
+		var innerArray = [];
+		innerArray.push(tableData.data[i].row[0]);
+		innerArray.push(Number(tableData.data[i].row[1]));
+		array.push(innerArray);
 	}
 	//console.log(array);
 	var data = google.visualization.arrayToDataTable(array);
@@ -426,7 +446,10 @@ function showBarChart(tableData, chartName){
 	var array = [];
 	array.push(tableData.schema.columnNames);
 	for (var i = 0; i < tableData.data.length; i++) {
-		array.push(tableData.data[i].row);
+		var innerArray = [];
+		innerArray.push(tableData.data[i].row[0]);
+		innerArray.push(Number(tableData.data[i].row[1]));
+		array.push(innerArray);
 	}
 	//console.log(array);
 	var data = google.visualization.arrayToDataTable(array);
@@ -450,7 +473,10 @@ function showColumnChart(tableData, chartName){
 	var array = [];
 	array.push(tableData.schema.columnNames);
 	for (var i = 0; i < tableData.data.length; i++) {
-		array.push(tableData.data[i].row);
+		var innerArray = [];
+		innerArray.push(tableData.data[i].row[0]);
+		innerArray.push(Number(tableData.data[i].row[1]));
+		array.push(innerArray);
 	}
 	//console.log(array);
 	var data = google.visualization.arrayToDataTable(array);
@@ -473,7 +499,10 @@ function showAreaChart(tableData, chartName){
 	var array = [];
 	array.push(tableData.schema.columnNames);
 	for (var i = 0; i < tableData.data.length; i++) {
-		array.push(tableData.data[i].row);
+		var innerArray = [];
+		innerArray.push(tableData.data[i].row[0]);
+		innerArray.push(Number(tableData.data[i].row[1]));
+		array.push(innerArray);
 	}
 	//console.log(array);
 	var data = google.visualization.arrayToDataTable(array);
@@ -497,4 +526,5 @@ function showAreaChart(tableData, chartName){
 $('#clearChart').click(function(event) {
 	$('#chart_div').html('');
 });
+
 
