@@ -1,49 +1,45 @@
-//get all data about this User
-//This part should use ajax
-//
+var SERVER_IP = "http://54.173.71.235:7654";
+var USER_ID = 1;
+console.log({"cid":3,"columns":"name,population","did":"24","dname":"vistest","storyVM":{"canvasVM":{"cdate":"2015-04-15T17:37:05","mdate":"2015-04-15T17:37:05","name":"zou","privilege":0,"user":{"canvasSet":[],"userId":1,"userNames":"user1"},"vid":14},"chartVMSet":[],"did":"24","dname":"vistest","sid":8,"tname":"country"},"tname":"country","type":"pie"});
 
-
-
+// var canvasJsonObj = [
+// 	{
+// 		"cdate":"2015-04-12T21:56:09",
+// 		"mdate":"2015-04-12T21:56:09",
+// 		"name":"test2",
+// 		"privilege":0,
+// 		"user":{"canvasSet":[],"userId":1,"userNames":"user1"},
+// 		"vid":11
+// 	},
+// 	{
+// 		"cdate":"2015-04-15T17:37:05",
+// 		"mdate":"2015-04-15T17:37:05",
+// 		"name":"zou",
+// 		"privilege":0,
+// 		"user":{"canvasSet":[],"userId":1,"userNames":"user1"},
+// 		"vid":14
+// 	}
+// ];
 
 //USER->CANVAS
-var userJsonObj = {
-	userId: "23",
-	user_names: "Haoda",
-	story: [
-		{sid: "1", conninfo: "test1"},
-		{sid: "2", conninfo: "test2"}
-	],
-	canvas: [
-		{
-			vid: "1", 
-			name: "canvas1",
-			cdate: "2015-02-13 17:34:56"
-		},
-		{
-			vid: "2", 
-			name: "canvas2",
-			cdate: "2015-03-18 17:34:56"
-		},
-		{
-			vid: "3", 
-			name: "canvas3",
-			cdate: "2014-12-21 17:34:56"
-		}
-	]
-};
-$('#userName').html(userJsonObj.user_names);
 
+//AJAX get all data about this User
+$.getJSON(SERVER_IP+'/Visualization/canvas/user/'+USER_ID, function(canvasJsonObj) {
+	$('#userName').html(canvasJsonObj[0].user.userNames);
 
-//INITIAL tables
-$('#canvas-table').DataTable({
-	paging: false,
-	data: userJsonObj.canvas,
-	columns: [
-	       { data: 'vid' },
-	       { data: 'name'},
-	       { data: 'cdate' }
-    ]
+	//INITIAL tables
+	$('#canvas-table').DataTable({
+		paging: false,
+		data: canvasJsonObj,
+		columns: [
+		       { data: 'vid' },
+		       { data: 'name'},
+		       { data: 'cdate' }
+	    ]
+	});
 });
+
+
 $('#story-table').DataTable({
 	paging: false,
 });
@@ -53,19 +49,27 @@ $('#chart-table').DataTable({
 
 $(document).on('click', '#collapseOne tbody tr', function(event) {
 	event.preventDefault();
-	$('.selected').removeClass('selected');
+	$('#collapseOne .selected').removeClass('selected');
 	$(this).addClass('selected');
 	$('#openV').removeAttr('disabled');
 	$('#deleteV').removeAttr('disabled');
 });
 
-//Creating a new CANVAS
+//Create CANVAS
 $('#newCanvas .ok').click(function(event) {	
-	//$('#newCanvas').modal('hide');
-	var user_id = userJsonObj.userId;
 	var canvasName = $('#newCanvas input[type=text]').val();
 	if ($.trim(canvasName)!=0) {
-		alert(user_id+" "+canvasName);
+		//AJAX create 
+		$.getJSON(SERVER_IP+'/Visualization/canvas/new/'+USER_ID+'/'+canvasName, function(data) {
+			//ADD created CANVAS to canvas tables
+			console.log(data);
+			$('#canvas-table').DataTable().row.add({
+					"vid": data.vid,
+					"name": data.name,
+					"cdate": data.cdate
+				}).draw();
+		});
+
 		$('#newCanvas').modal('hide');
 		$('#newCanvas input[type=text]').val('');
 	}else{
@@ -73,60 +77,57 @@ $('#newCanvas .ok').click(function(event) {
 	}		
 });
 
-//Open a CANVAS
-$('#openV').click(function(event) {
+$('#deleteV').click(function(event) {
 	var canvasId = $('#collapseOne .selected').children().first().html();
-	//alert(canvasId);
-	$('#createS').removeAttr('disabled');
-	$('.panel-collapse').collapse('hide');
-	$('#collapseTwo').collapse('show');
-
-	//use ajax to get stories by canvasId
-	var canvasObj = {
-		vid: 1,
-		canvasName: "canvas1",
-		story:[
-			{
-				sid: 1,
-				did: 1,
-				dname: "group1",
-				tname: "metaStore"
-			},
-			{
-				sid: 2,
-				did: 204,
-				dname: "class2",
-				tname: "table"
-			}
-		]
-	};
-	$('#headingTwo h4').html('<b>Story</b> of [Canvas id: '+canvasObj.vid+', Canvas Name: '+canvasObj.canvasName+']');
-
-	$('#story-table').DataTable().destroy();//destory the original table first
-	$('#story-table').DataTable({
-		paging: false,
-		data: canvasObj.story,
-		columns: [
-			{data: "sid"},
-			{data: "did"},
-			{data: "dname"},
-			{data: "tname"}
-		]
+	//AJAX delete 
+	bootbox.confirm("Are you sure to delete this canvas?", function(result){
+		if (result==true) {
+			$.getJSON(SERVER_IP+'/Visualization/canvas/delete/'+canvasId, function(data) {
+				//ADD created CANVAS to canvas tables
+				console.log(data);
+				if (data.flag=="S") {//delete sucessful
+					$('#canvas-table').DataTable().row($('#collapseOne .selected')).remove().draw();
+				}else{
+					alert("Delete canvas "+canvasId+" unsuccessfully!!");
+				};
+			});
+		}
 	});
 });
 
-$('#deleteV').click(function(event) {
-	var canvasId = $('#collapseOne .selected').children().first().html();
-	alert("Deleting CANVAS "+canvasId);
-	
+var canvasId;
+//Open a CANVAS
+$('#openV').click(function(event) {
+	canvasId = $('#collapseOne .selected').children().first().html();
+	var canvasName = $('#collapseOne .selected').children().eq(1).html();
+	$('#headingTwo h4').html('<b>Story</b> of [Canvas id: '+canvasId+', Canvas Name: '+canvasName+']');
+	//alert(canvasId);
+	$('#createS').removeAttr('disabled');
+	//$('.panel-collapse').collapse('hide');
+	$('#collapseTwo').collapse('show');
 
+	//AJAX to get STORY by canvasID
+	$.getJSON(SERVER_IP+'/Visualization/story/showAll/'+canvasId, function(storyJsonObj) {
+		$('#story-table').DataTable().destroy();//destory the original table first
+		//INITIAL tables
+		$('#story-table').DataTable({
+			paging: false,
+			data: storyJsonObj,
+			columns: [
+			       { data: 'sid' },
+			       { data: 'did'},
+			       { data: 'dname' },
+			       { data: 'tname' }
+		    ]
+		});
+	});
 });
 
 
 //CANVAS->STORY
 $(document).on('click', '#collapseTwo tbody tr', function(event) {
 	event.preventDefault();
-	$('.selected').removeClass('selected');
+	$('#collapseTwo .selected').removeClass('selected');
 	$(this).addClass('selected');
 	$('#openS').removeAttr('disabled');
 	$('#deleteS').removeAttr('disabled');
@@ -135,62 +136,61 @@ $(document).on('click', '#collapseTwo tbody tr', function(event) {
 var selectedStoryId;
 var selectedDid;
 var selectedTname;
+var selectedDname;
 
 $('#openS').click(function(event) {
 	var storyId = $('#collapseTwo .selected').children().first().html();
 	var did = $('#collapseTwo .selected').children().eq(1).html();
 	var tname = $('#collapseTwo .selected').children().eq(3).html();
-
+	var dname = $('#collapseTwo .selected').children().eq(2).html();
 	selectedStoryId = storyId;
 	selectedDid = did;
 	selectedTname = tname;
+	selectedDname = dname;
 	//alert("Open sid "+storyId);
 	$('#headingThree h4').html('<b>Chart</b> of [Story '+storyId+', did: '+did+', tname: '+tname+']');
-	$('.panel-collapse').collapse('hide');
+	//$('.panel-collapse').collapse('hide');
 	$('#collapseThree').collapse('show');
 
 	//AJAX to get CHART of this STORY
-	var chartObj = [
-		{
-			cid: 1,
-			cname: "PieChart1",
-			type: "pie",
-			did: 1,
-			dname: "class2",
-			tname: "teacher",
-			col: "name, age"
-		},
-		{
-			cid: 2,
-			cname: "BarChart1",
-			type: "bar",
-			did: 1,
-			dname: "class2",
-			tname: "teacher",
-			col: "name, age"
-		},
-	];
 
-	$('#chart-table').DataTable().destroy();//destory the original table first
-	$('#chart-table').DataTable({
-		paging: false,
-		data: chartObj,
-		columns: [
-			{data: "cid"},
-			{data: "cname"},
-			{data: "type"},
-			{data: "did"},
-			{data: "dname"},
-			{data: "tname"},
-			{data: "col"}
-		]
-	});
+	$.getJSON(SERVER_IP+'/Visualization/chart/showAll/'+storyId, function(chartJsonObj) {
+		$('#chart-table').DataTable().destroy();//destory the original table first
+		//INITIAL tables
+		$('#chart-table').DataTable({
+			paging: false,
+			data: chartJsonObj,
+			columns: [
+			       { data: 'cid' },
+			       { data: 'type'},
+			       { data: 'did' },
+			       { data: 'dname' },
+			       { data: 'tname' },
+			       { data: 'columns' }
+		    ]
+		});
+	});	
+
 	$('#createC').removeAttr('disabled');
 }); 
 
+
+//DELETE STORY
 $('#deleteS').click(function(event) {
 	var storyId = $('#collapseTwo .selected').children().first().html();
-	alert("Delete sid "+storyId);
+	bootbox.confirm("Are you sure to delete this Story?", function(result){
+		if (result==true) {
+			$.getJSON(SERVER_IP+'/Visualization/story/delete/'+storyId, function(data) {
+				//ADD created CANVAS to canvas tables
+				console.log(data);
+				if (data.flag=="S") {//delete sucessful
+					$('#story-table').DataTable().row($('#collapseTwo .selected')).remove().draw();
+				}else{
+					alert("Delete story "+storyId+" unsuccessfully!!");
+				};
+			});
+		}
+	});
 });
 
 
@@ -199,7 +199,7 @@ $('#deleteS').click(function(event) {
 //STORY->CHART
 $(document).on('click', '#collapseThree tbody tr', function(event) {
 	event.preventDefault();
-	$('.selected').removeClass('selected');
+	$('#collapseThree .selected').removeClass('selected');
 	$(this).addClass('selected');
 	$('#openC').removeAttr('disabled');
 	$('#deleteC').removeAttr('disabled');
@@ -207,92 +207,93 @@ $(document).on('click', '#collapseThree tbody tr', function(event) {
 
 $('#createC').click(function(event) {
 	//alert(selectedDid+" "+selectedTname);
-	
+	//$('#selectType').val('nothing');
 	//AJAX to METASTORE to get ALL COLUMNS
 	var urlToMeta = "http://54.152.26.131:7654/datasources/"+selectedDid+"/"+selectedTname+"/columns";
-
-	var columnsObj = [
-		{"columnName":"ID"},
-		{"columnName":"DBtype"},
-		{"columnName":"IPAddress"},
-		{"columnName":"port"},
-		{"columnName":"username"},
-		{"columnName":"password"},
-		{"columnName":"DBname"},
-		{"columnName":"title"},
-		{"columnName":"description"}
-	];
-
-	$('#selectType').change(function(event) {
-		var type = $('#selectType').val();
-		$('#col1').html('');
-		$('#col2').html('');
-		if (type=='nothing') {
-			
-		}else if (type!='map') {
-			$('#FG3').hide();
-			for (var i = 0; i < columnsObj.length; i++) {
-				$('#col1').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
-				$('#col2').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
+	$.getJSON(urlToMeta, function(columnsJsonObj) {
+		console.log(columnsJsonObj);
+		$('#selectType').change(function(event) {
+			var type = $('#selectType').val();
+			$('#col1').html('');
+			$('#col2').html('');
+			if (type=='nothing') {
+				
+			}else if (type!='map') {
+				$('#FG3').hide();
+				for (var i = 0; i < columnsJsonObj.length; i++) {
+					$('#col1').append('<option value="'+columnsJsonObj[i].columnName+'">'+columnsJsonObj[i].columnName+'</option>');
+					$('#col2').append('<option value="'+columnsJsonObj[i].columnName+'">'+columnsJsonObj[i].columnName+'</option>');
+				}
+			}else{//map chart
+				$('#FG3').show();
+				for (var i = 0; i < columnsJsonObj.length; i++) {
+					$('#col1').append('<option value="'+columnsJsonObj[i].columnName+'">'+columnsJsonObj[i].columnName+'</option>');
+					$('#col2').append('<option value="'+columnsJsonObj[i].columnName+'">'+columnsJsonObj[i].columnName+'</option>');
+					$('#col3').append('<option value="'+columnsJsonObj[i].columnName+'">'+columnsJsonObj[i].columnName+'</option>');
+				}
 			}
-		}else{//map chart
-			$('#FG3').show();
-			for (var i = 0; i < columnsObj.length; i++) {
-				$('#col1').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
-				$('#col2').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
-				$('#col3').append('<option value="'+columnsObj[i].columnName+'">'+columnsObj[i].columnName+'</option>');
-			}
-		}
+		});
 	});
 });
 
 $('#newChart .ok').click(function(event) {
-		var chartName = $('#newChart .name').val();
-		var type = $('#selectType').val();
-		var col1 = $('#col1').val();
-		var col2 = $('#col2').val();
-		var col3 = $('#col3').val();
+	var type = $('#selectType').val();
+	var col1 = $('#col1').val();
+	var col2 = $('#col2').val();
+	var col3 = $('#col3').val();
+	//alert(selectedStoryId);
+	if (type!='nothing'&&col1!=col2&&col2!=col3&&col3!=col1) {
+		//AJAX to SAVE this CHART	
+		$.getJSON(SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+type+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+col1+','+col2, function(data) {
+			//alert(SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+type+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+col1+','+col2);
+			$('#chart-table').DataTable().row.add({
+					"cid": data.cid,
+					"type": data.type,
+					"did": data.did,
+					"dname": data.dname,
+					"tname": data.tname,
+					"columns": data.columns
+				}).draw();
+		});
 
-		if ($.trim(chartName)!=0&&type!='nothing'&&col1!=col2&&col2!=col3&&col3!=col1) {
-			//AJAX to PRESTO to get DATA of COLUMNS
-			var dataObj = { 
-				schema: {
-					columnNames: ["pizza", "slice"]
-				},
-				data: [
-					{row: ["Beef",4]},
-					{row: ["Mushroom",5]},
-					{row: ["Fish",10]},
-					{row: ["Fruit",3]}
-				]
-			};
+		//AJAX to PRESTO to get DATA of COLUMNS
+		var dataObj = { 
+			schema: {
+				columnNames: ["pizza", "slice"]
+			},
+			data: [
+				{row: ["Beef",4]},
+				{row: ["Mushroom",5]},
+				{row: ["Fish",10]},
+				{row: ["Fruit",3]}
+			]
+		};
 
-			$('#collapseFour').collapse('show');
-			if (type=='pie') {
-				//alert("!");
-				showPieChart(dataObj,chartName);
-			}else if (type=='bar') {
-				showBarChart(dataObj,chartName);
-			}else if (type=='column') {
-				showColumnChart(dataObj,chartName);
-			}else if (type=='area') {
-				showAreaChart(dataObj,chartName);
-			}
-			
-
-			$('#newChart').modal('hide');
-		}else{
-			$('#newChart .name').focus();
-		}
+		var chartName = "zou";
+		$('#collapseFour').collapse('show');
+		if (type=='pie') {
+			//alert("!");
+			showPieChart(dataObj,chartName);
+		}else if (type=='bar') {
+			showBarChart(dataObj,chartName);
+		}else if (type=='column') {
+			showColumnChart(dataObj,chartName);
+		}else if (type=='area') {
+			showAreaChart(dataObj,chartName);
+		}			
+		$('#newChart').modal('hide');
+	}else{
+		alert("Check you input!");
+		$('#newChart .modal-body').focus();
+	}
 });
 
 $('#openC').click(function(event) {
-	var did = $('#collapseThree .selected').children().eq(3).html();
-	var tname = $('#collapseThree .selected').children().eq(5).html();
-	var columns = $('#collapseThree .selected').children().eq(6).html();
-	var chartName = $('#collapseThree .selected').children().eq(1).html();
-	var type = $('#collapseThree .selected').children().eq(2).html();
-
+	var did = $('#collapseThree .selected').children().eq(2).html();
+	var tname = $('#collapseThree .selected').children().eq(3).html();
+	var columns = $('#collapseThree .selected').children().eq(5).html();
+	var chartName = "Chart "+ $('#collapseThree .selected').children().eq(0).html();
+	var type = $('#collapseThree .selected').children().eq(1).html();
 	//AJAX send columns, did.tname to PRESTO to get DATA
 	var dataObj = { 
 		schema: {
@@ -325,20 +326,20 @@ $('#openC').click(function(event) {
 //KEYWORD SEARCH
 $('.keyword .searchBtn').click(function(event) {
 	$('#newStory .ok').attr('disabled', 'disabled');
-
 	var searchText = $('.keyword input').val();
+
 	if ($.trim(searchText).length!=0) {
 		//AJAX get data from KeyWord Group
 		var KWResultObj = [
 			{
-				did: 205,
-				dname: "UP",
-				tname: "professors"
+				did: 24,
+				dname: "vistest",
+				tname: "country"
 			},
 			{
-				did: 205,
-				dname: "CMU",
-				tname: "professors"
+				did: 24,
+				dname: "vistest",
+				tname: "people"
 			}
 		];
 			
@@ -361,16 +362,6 @@ $('.keyword .searchBtn').click(function(event) {
 			$('#newStory .selected').removeClass('selected');
 			$(this).addClass('selected');
 			$('#newStory .ok').removeAttr('disabled');
-
-			$('#newStory .ok').click(function(event) {
-				var selectedDid = $('#newStory .selected').children().eq(0).html();
-				var selectedDname = $('#newStory .selected').children().eq(1).html();
-				var selectedTname = $('#newStory .selected').children().eq(2).html();
-				alert("Add story: "+selectedDid+", "+selectedDname+", "+selectedTname);
-
-				//AJAX create new STORY!!!
-				$('#newStory').modal('hide');
-			});
 		});
 
 	}else{
@@ -379,8 +370,25 @@ $('.keyword .searchBtn').click(function(event) {
 	
 });
 
-
-
+//Create STORY
+$('#newStory .ok').click(function(event) {
+	var selectedDid = $('#newStory .selected').children().eq(0).html();
+	var selectedDname = $('#newStory .selected').children().eq(1).html();
+	var selectedTname = $('#newStory .selected').children().eq(2).html();
+	alert("Add story: "+selectedDid+", "+selectedDname+", "+selectedTname+"!"+canvasId);
+	//AJAX create new STORY!!!
+	$.getJSON(SERVER_IP+'/Visualization/story/new/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+canvasId, function(data) {
+			//ADD Story to canvas
+			console.log(data);
+			$('#story-table').DataTable().row.add({
+					"sid": data.sid,
+					"did": data.did,
+					"dname": data.dname,
+					"tname": data.tname,
+				}).draw();
+		});
+	$('#newStory').modal('hide');
+});
 
 //GOOGLE CHART FUNCTIONS
 var chartCounter = 0;
