@@ -58,6 +58,12 @@
 	</nav>
 	<!-- nav bar end -->
 
+	<div class="row">
+		<div class="alert alert-info" role="alert" style="margin:0px auto;width:96%">
+			<b>Please firstly select Canvas, then Story, then Chart.</b>
+		</div>
+	</div>
+	
 	<div id="file_manager">
 <!-- 		<div class="row">
 			<div class="alert alert-info">
@@ -110,7 +116,8 @@
 			      <div class="panel-body">
 			        <div class="row">
 						<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-							<div class="well">
+							<div id="story-alert" class="alert alert-danger" role="alert">Please select a Canvas first!</div>
+							<div id="story-well" class="well" hidden>
 								<table id="story-table" class="stripe row-border hover order-column">
 									<thead>
 										<tr>
@@ -141,7 +148,8 @@
 			    </div>
 			    <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
 			      <div class="panel-body">
-			        <div class="well">
+			      	<div id="chart-alert" class="alert alert-danger" role="alert">Please select a Story first!</div>
+			        <div id="chart-well" class="well">
 			        	<div class="row">
 							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 								<table id="chart-table" class="stripe row-border hover order-column">
@@ -169,11 +177,6 @@
 			  </div>
 
 			  <div class="panel panel-default">
-			    <!-- <div class="panel-heading" role="tab" id="headingFour" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-			      <h4 class="panel-title">
-			          Google Chart Panel
-			      </h4>
-			    </div> -->
 			    <div class="panel-heading" role="tab" id="headingFour">
       				<h4 class="panel-title">
         			<a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
@@ -277,7 +280,7 @@
 	            	</div>
 	            </div> -->
 	            <div class="row">
-	            	<div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+	            	<div class="col-xs-6 ">
 	            		<span class="control-label">Type</span>
 	            		<select class="form-control" name="" id="selectType">
 	            			<option value="nothing">--------</option>

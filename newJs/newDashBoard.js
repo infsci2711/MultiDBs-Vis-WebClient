@@ -1,14 +1,12 @@
 var SERVER_IP = "http://54.173.71.235:7654";
 var USER_ID = 1;
 
-
 //USER->CANVAS
-
-//AJAX get all data about this User
+//AJAX get all CANVAS about this USER
 $.getJSON(SERVER_IP+'/Visualization/canvas/user/'+USER_ID, function(canvasJsonObj) {
 	$('#userName').html(canvasJsonObj[0].user.userNames);
 
-	//INITIAL tables
+	//INITIAL CANVAS table
 	$('#canvas-table').DataTable({
 		paging: false,
 		data: canvasJsonObj,
@@ -20,10 +18,13 @@ $.getJSON(SERVER_IP+'/Visualization/canvas/user/'+USER_ID, function(canvasJsonOb
 	});
 });
 
-
+//Firstly hide story table because user have not choose canvas
+$('#story-well').hide();
 $('#story-table').DataTable({
 	paging: false,
 });
+//Firstly hide chart table because user have not choose story
+$('#chart-well').hide();
 $('#chart-table').DataTable({
 	paging: false,
 });
@@ -40,10 +41,11 @@ $(document).on('click', '#collapseOne tbody tr', function(event) {
 $('#newCanvas .ok').click(function(event) {	
 	var canvasName = $('#newCanvas input[type=text]').val();
 	if ($.trim(canvasName)!=0) {
-		//AJAX create 
+		//AJAX create CANVAS
 		$.getJSON(SERVER_IP+'/Visualization/canvas/new/'+USER_ID+'/'+canvasName, function(data) {
 			//ADD created CANVAS to canvas tables
-			console.log(data);
+			//console.log(data);
+
 			$('#canvas-table').DataTable().row.add({
 					"vid": data.vid,
 					"name": data.name,
@@ -58,25 +60,27 @@ $('#newCanvas .ok').click(function(event) {
 	}		
 });
 
+//Delete CANVAS
 $('#deleteV').click(function(event) {
 	var canvasId = $('#collapseOne .selected').children().first().html();
 	//AJAX delete 
 	bootbox.confirm("Are you sure to delete this canvas?", function(result){
 		if (result==true) {
 			$.getJSON(SERVER_IP+'/Visualization/canvas/delete/'+canvasId, function(data) {
-				//ADD created CANVAS to canvas tables
-				console.log(data);
+				//Remove deleted CANVAS to canvas tables
+				//console.log(data);
 				if (data.flag=="S") {//delete sucessful
 					$('#canvas-table').DataTable().row($('#collapseOne .selected')).remove().draw();
 				}else{
-					alert("Delete canvas "+canvasId+" unsuccessfully!!");
+					alert("Delete canvas "+canvasId+" unsuccessfully!! You should delete Story in this canvas frist!");
 				};
 			});
 		}
 	});
 });
 
-var canvasId;
+var canvasId;//GLOBAL selected canvasID for future use
+
 //Open a CANVAS
 $('#openV').click(function(event) {
 	canvasId = $('#collapseOne .selected').children().first().html();
@@ -85,6 +89,9 @@ $('#openV').click(function(event) {
 	//alert(canvasId);
 	$('#createS').removeAttr('disabled');
 	//$('.panel-collapse').collapse('hide');
+	$('#story-well').show();
+	$('#story-alert').hide();
+	
 	$('#collapseTwo').collapse('show');
 
 	//AJAX to get STORY by canvasID
@@ -114,16 +121,19 @@ $(document).on('click', '#collapseTwo tbody tr', function(event) {
 	$('#deleteS').removeAttr('disabled');
 });
 
+//Global variables for future use
 var selectedStoryId;
 var selectedDid;
 var selectedTname;
 var selectedDname;
 
+//Open STORY
 $('#openS').click(function(event) {
 	var storyId = $('#collapseTwo .selected').children().first().html();
 	var did = $('#collapseTwo .selected').children().eq(1).html();
-	var tname = $('#collapseTwo .selected').children().eq(3).html();
 	var dname = $('#collapseTwo .selected').children().eq(2).html();
+	var tname = $('#collapseTwo .selected').children().eq(3).html();
+	//Set Global variables
 	selectedStoryId = storyId;
 	selectedDid = did;
 	selectedTname = tname;
@@ -132,9 +142,10 @@ $('#openS').click(function(event) {
 	$('#headingThree h4').html('<b>Chart</b> of [Story '+storyId+', did: '+did+', tname: '+tname+']');
 	//$('.panel-collapse').collapse('hide');
 	$('#collapseThree').collapse('show');
+	$('#chart-well').show();
+	$('#chart-alert').hide();
 
 	//AJAX to get CHART of this STORY
-
 	$.getJSON(SERVER_IP+'/Visualization/chart/showAll/'+storyId, function(chartJsonObj) {
 		$('#chart-table').DataTable().destroy();//destory the original table first
 		//INITIAL tables
@@ -172,7 +183,7 @@ $('#deleteS').click(function(event) {
 				if (data.flag=="S") {//delete sucessful
 					$('#story-table').DataTable().row($('#collapseTwo .selected')).remove().draw();
 				}else{
-					alert("Delete story "+storyId+" unsuccessfully!!");
+					alert("Delete story "+storyId+" unsuccessfully!! You should delete charts in this story first!");
 				};
 			});
 		}
@@ -191,10 +202,8 @@ $(document).on('click', '#collapseThree tbody tr', function(event) {
 	$('#deleteC').removeAttr('disabled');
 });
 
-//Create CHART
+//Create CHART - OPEN
 $('#createC').click(function(event) {
-	//alert(selectedDid+" "+selectedTname);
-	//$('#selectType').val('nothing');
 	//AJAX to METASTORE to get ALL COLUMNS
 	var urlToMeta = "http://54.152.26.131:7654/datasources/"+selectedDid+"/"+selectedTname+"/columns";
 	$.getJSON(urlToMeta, function(columnsJsonObj) {
@@ -223,13 +232,14 @@ $('#createC').click(function(event) {
 	});
 });
 
-//Create Chart
+//Create Chart - OK
 $('#newChart .ok').click(function(event) {
 	var type = $('#selectType').val();
 	var col1 = $('#col1').val();
 	var col2 = $('#col2').val();
 	var col3 = $('#col3').val();
 	//alert(selectedStoryId);
+	console.log(col1+','+col2+','+col3+': '+type);
 	if (type!='nothing'&&col1!=col2&&col2!=col3&&col3!=col1) {
 		//AJAX to SAVE this CHART	
 		$.getJSON(SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+type+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+col1+','+col2, function(data) {
@@ -273,8 +283,6 @@ $('#newChart .ok').click(function(event) {
 	           alert("Cannot get data from Presto!");
 	        }
 	    });
-
-
 			
 		$('#newChart').modal('hide');
 	}else{
@@ -294,7 +302,6 @@ $('#openC').click(function(event) {
 	var urlToPresto = "http://54.174.80.167:7654/Query/"
 	var query = 'select '+columns+' from '+did+'.'+tname;
 	//alert(query);
-
 	$.ajax({
         url: urlToPresto,
         type: 'PUT',
@@ -328,7 +335,7 @@ $('#deleteC').click(function(event) {
 		if (result==true) {
 			$.getJSON(SERVER_IP+'/Visualization/chart/delete/'+chartId, function(data) {
 				//ADD created CANVAS to canvas tables
-				console.log(data);
+				//console.log(data);
 				if (data.flag=="S") {//delete sucessful
 					$('#chart-table').DataTable().row($('#collapseThree .selected')).remove().draw();
 				}else{
@@ -392,7 +399,7 @@ $('#newStory .ok').click(function(event) {
 	var selectedDid = $('#newStory .selected').children().eq(0).html();
 	var selectedDname = $('#newStory .selected').children().eq(1).html();
 	var selectedTname = $('#newStory .selected').children().eq(2).html();
-	alert("Add story: "+selectedDid+", "+selectedDname+", "+selectedTname+"!"+canvasId);
+	//alert("Add story: "+selectedDid+", "+selectedDname+", "+selectedTname+"!"+canvasId);
 	//AJAX create new STORY!!!
 	$.getJSON(SERVER_IP+'/Visualization/story/new/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+canvasId, function(data) {
 			//ADD Story to canvas
@@ -406,6 +413,8 @@ $('#newStory .ok').click(function(event) {
 		});
 	$('#newStory').modal('hide');
 });
+
+
 
 //GOOGLE CHART FUNCTIONS
 var chartCounter = 0;
