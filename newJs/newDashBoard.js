@@ -355,7 +355,15 @@ $('#openC').click(function(event) {
 	
 	//AJAX send columns, did.tname to PRESTO to get DATA
 	var urlToPresto = "http://54.174.80.167:7654/Query/"
-	var query = 'select '+columns+' from '+did+'.'+tname;
+	var query = '';
+	var col = columns.split(",");
+	if (columns.indexOf('max(')||columns.indexOf('min(')||columns.indexOf('avg(')||columns.indexOf('count(')||columns.indexOf('sum(')) {
+		query = 'select '+columns+' from '+did+'.'+tname+' group by '+col[0];
+	}else{
+		query = 'select '+columns+' from '+did+'.'+tname;
+	}
+
+	
 	//alert(query);
 	$.ajax({
         url: urlToPresto,
