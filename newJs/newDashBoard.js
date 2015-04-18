@@ -109,6 +109,13 @@ $('#openV').click(function(event) {
 		    ]
 		});
 	});
+
+	$('#collapseThree').collapse('hide');
+	$('#collapseFour').collapse('hide');
+	//scroll to bottom
+  	$("html, body").animate({ scrollTop: $(document).height() }, 1000);
+	
+
 });
 
 
@@ -169,6 +176,11 @@ $('#openS').click(function(event) {
 	$('#col2').html('');
 
 	$('#createC').removeAttr('disabled');
+
+	$('#collapseFour').collapse('hide');
+	//scroll to bottom
+	$("html, body").animate({ scrollTop: $(document).height() }, 1000);
+
 }); 
 
 
@@ -254,35 +266,35 @@ $('#newChart .ok').click(function(event) {
 				}).draw();
 		});
 
-		var columns = col1+','+col2;
-		//AJAX to PRESTO to get DATA of COLUMNS
-		var urlToPresto = "http://54.174.80.167:7654/Query/"
-		var query = 'select '+columns+' from '+selectedDid+'.'+selectedTname;
-		//alert(query);
-		$.ajax({
-	        url: urlToPresto,
-	        type: 'PUT',
-	        dataType: 'json',
-	        data: '{"query": "'+query+'"}',
-	        contentType: "application/json",
-	        crossDomain: true,
-	        success: function(dataObj) {
-	            console.log(dataObj);
-	            $('#collapseFour').collapse('show');
-				if (type=='pie') {
-					showPieChart(dataObj,chartName);
-				}else if (type=='bar') {
-					showBarChart(dataObj,chartName);
-				}else if (type=='column') {
-					showColumnChart(dataObj,chartName);
-				}else if (type=='area') {
-					showAreaChart(dataObj,chartName);
-				}
-	        },
-	        error: function(data) {
-	           alert("Cannot get data from Presto!");
-	        }
-	    });
+		// var columns = col1+','+col2;
+		// //AJAX to PRESTO to get DATA of COLUMNS
+		// var urlToPresto = "http://54.174.80.167:7654/Query/"
+		// var query = 'select '+columns+' from '+selectedDid+'.'+selectedTname;
+		// //alert(query);
+		// $.ajax({
+	 //        url: urlToPresto,
+	 //        type: 'PUT',
+	 //        dataType: 'json',
+	 //        data: '{"query": "'+query+'"}',
+	 //        contentType: "application/json",
+	 //        crossDomain: true,
+	 //        success: function(dataObj) {
+	 //            console.log(dataObj);
+	 //            $('#collapseFour').collapse('show');
+		// 		if (type=='pie') {
+		// 			showPieChart(dataObj,chartName);
+		// 		}else if (type=='bar') {
+		// 			showBarChart(dataObj,chartName);
+		// 		}else if (type=='column') {
+		// 			showColumnChart(dataObj,chartName);
+		// 		}else if (type=='area') {
+		// 			showAreaChart(dataObj,chartName);
+		// 		}
+	 //        },
+	 //        error: function(data) {
+	 //           alert("Cannot get data from Presto!");
+	 //        }
+	 //    });
 			
 		$('#newChart').modal('hide');
 	}else{
@@ -326,6 +338,8 @@ $('#openC').click(function(event) {
            alert("Cannot get data from Presto!");
         }
     });
+
+    $("html, body").animate({ scrollTop: $(document).height() }, 1000);
 });
 
 //delete CHART
@@ -364,6 +378,16 @@ $('.keyword .searchBtn').click(function(event) {
 				did: 24,
 				dname: "vistest",
 				tname: "people"
+			},
+			{
+				did: 24,
+				dname: "vistest",
+				tname: "city"
+			},
+			{
+				did: 24,
+				dname: "vistest",
+				tname: "student"
 			}
 		];
 			
