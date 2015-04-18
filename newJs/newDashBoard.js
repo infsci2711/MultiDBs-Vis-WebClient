@@ -357,13 +357,14 @@ $('#openC').click(function(event) {
 	var urlToPresto = "http://54.174.80.167:7654/Query/"
 	var query = '';
 	var col = columns.split(",");
-	if (columns.indexOf('max(')||columns.indexOf('min(')||columns.indexOf('avg(')||columns.indexOf('count(')||columns.indexOf('sum(')) {
+	var isAggregateQuery = columns.indexOf('max(')||columns.indexOf('min(')||columns.indexOf('avg(')||columns.indexOf('count(')||columns.indexOf('sum(');
+	if (isAggregateQuery>0) {
 		query = 'select '+columns+' from '+did+'.'+tname+' group by '+col[0];
 	}else{
 		query = 'select '+columns+' from '+did+'.'+tname;
 	}
 
-	
+	console.log(query);
 	//alert(query);
 	$.ajax({
         url: urlToPresto,
