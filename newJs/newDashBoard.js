@@ -250,11 +250,22 @@ $('#newChart .ok').click(function(event) {
 	var col1 = $('#col1').val();
 	var col2 = $('#col2').val();
 	var col3 = $('#col3').val();
+	var isAggregateQuery = $('#aggForm').is(":visible"); 
 	//alert(selectedStoryId);
 	console.log(col1+','+col2+','+col3+': '+type);
-	if (type!='nothing'&&col1!=col2&&col2!=col3&&col3!=col1) {
+	if (type!='nothing') {
 		//AJAX to SAVE this CHART	
-		$.getJSON(SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+type+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+col1+','+col2, function(data) {
+		var chartName = '';
+		var urlToSave = '';
+		var aggType = '';
+		if (!isAggregateQuery) {
+			urlToSave = SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+type+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+col1+','+col2;
+		}else{
+			aggType = $('#aggType').val();
+			urlToSave = SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+type+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+col1+','+aggType+'('+col2+')';
+		}
+
+		$.getJSON(urlToSave, function(data) {
 			//alert(SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+type+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+col1+','+col2);
 			$('#chart-table').DataTable().row.add({
 					"cid": data.cid,
@@ -264,44 +275,76 @@ $('#newChart .ok').click(function(event) {
 					"tname": data.tname,
 					"columns": data.columns
 				}).draw();
+			chartName = "Chart "+data.cid;
 		});
+		var columns = '';
+		if (!isAggregateQuery) {
+			columns = col1+','+col2;
+		}else{
+			columns = col1+','+aggType+'('+col2+')';
+		}
+		
+		//AJAX to PRESTO to get DATA of COLUMNS
+		var urlToPresto = "http://54.174.80.167:7654/Query/"
+		//see if it is an Aggregate Query
+		
+		var query = '';
+		if (!isAggregateQuery) {
+			query = 'select '+columns+' from '+selectedDid+'.'+selectedTname;
+		}else{
+			query = 'select '+columns+' from '+selectedDid+'.'+selectedTname+' group by '+ col1;
+		}
 
-		// var columns = col1+','+col2;
-		// //AJAX to PRESTO to get DATA of COLUMNS
-		// var urlToPresto = "http://54.174.80.167:7654/Query/"
-		// var query = 'select '+columns+' from '+selectedDid+'.'+selectedTname;
-		// //alert(query);
-		// $.ajax({
-	 //        url: urlToPresto,
-	 //        type: 'PUT',
-	 //        dataType: 'json',
-	 //        data: '{"query": "'+query+'"}',
-	 //        contentType: "application/json",
-	 //        crossDomain: true,
-	 //        success: function(dataObj) {
-	 //            console.log(dataObj);
-	 //            $('#collapseFour').collapse('show');
-		// 		if (type=='pie') {
-		// 			showPieChart(dataObj,chartName);
-		// 		}else if (type=='bar') {
-		// 			showBarChart(dataObj,chartName);
-		// 		}else if (type=='column') {
-		// 			showColumnChart(dataObj,chartName);
-		// 		}else if (type=='area') {
-		// 			showAreaChart(dataObj,chartName);
-		// 		}
-	 //        },
-	 //        error: function(data) {
-	 //           alert("Cannot get data from Presto!");
-	 //        }
-	 //    });
-			
+		console.log(query);
+		//alert(query);
+		$.ajax({
+	        url: urlToPresto,
+	        type: 'PUT',
+	        dataType: 'json',
+	        data: '{"query": "'+query+'"}',
+	        contentType: "application/json",
+	        crossDomain: true,
+	        success: function(dataObj) {
+	            console.log(dataObj);
+	            $('#collapseFour').collapse('show');
+				if (type=='pie') {
+					showPieChart(dataObj,chartName);
+				}else if (type=='bar') {
+					showBarChart(dataObj,chartName);
+				}else if (type=='column') {
+					showColumnChart(dataObj,chartName);
+				}else if (type=='area') {
+					showAreaChart(dataObj,chartName);
+				}else if (type=='table') {
+					showTableChart(dataObj,chartName);
+				}
+	        },
+	        error: function(data) {
+	           alert("Cannot get data from Presto!");
+	        }
+	    });
+		
+		$("html, body").animate({ scrollTop: $(document).height() }, 1000);
 		$('#newChart').modal('hide');
 	}else{
 		alert("Check you input!");
 		$('#newChart .modal-body').focus();
 	}
 });
+
+//change type of chart
+$('.topNav').click(function(event) {
+	$('.topNav').parent().removeClass('active');
+	$(this).parent().addClass('active');
+	if ($(this).html()=='Aggregation') {
+		$('#aggForm').show("fast");
+	}else{
+		$('#aggForm').hide("fast");
+	}
+});
+
+
+
 
 $('#openC').click(function(event) {
 	var did = $('#collapseThree .selected').children().eq(2).html();
@@ -332,6 +375,8 @@ $('#openC').click(function(event) {
 				showColumnChart(dataObj,chartName);
 			}else if (type=='area') {
 				showAreaChart(dataObj,chartName);
+			}else if (type=='table') {
+				showTableChart(dataObj,chartName);
 			}
         },
         error: function(data) {
@@ -552,8 +597,33 @@ function showAreaChart(tableData, chartName){
 	var chart = new google.visualization.AreaChart(document.getElementById('chart'+chartCounter));
     chart.draw(data, option);
     chartCounter++;
+}
 
+function showTableChart(tableData, chartName){
+	var array = [];
+	array.push(tableData.schema.columnNames);
+	for (var i = 0; i < tableData.data.length; i++) {
+		var innerArray = [];
+		innerArray.push(tableData.data[i].row[0]);
+		innerArray.push(Number(tableData.data[i].row[1]));
+		array.push(innerArray);
+	}
+	//console.log(array);
+	var data = google.visualization.arrayToDataTable(array);
+	var option = {
+		title: chartName,
+		showRowNumber: true
+	};
 
+	$('#chart_div').append('<div id="chart'+chartCounter+'" class="chartContainer"></div>');
+	$('#chart'+chartCounter).draggable({
+		appendTo: '#chart_div',	
+		grid: [ 50, 20 ]
+	});
+
+	var chart = new google.visualization.Table(document.getElementById('chart'+chartCounter));
+    chart.draw(data, option);
+    chartCounter++;
 }
 
 $('#clearChart').click(function(event) {
