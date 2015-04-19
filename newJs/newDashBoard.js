@@ -357,8 +357,28 @@ $('#openC').click(function(event) {
 	var urlToPresto = "http://54.174.80.167:7654/Query/"
 	var query = '';
 	var col = columns.split(",");
-	var isAggregateQuery = columns.indexOf('max(')||columns.indexOf('min(')||columns.indexOf('avg(')||columns.indexOf('count(')||columns.indexOf('sum(');
-	if (isAggregateQuery>0) {
+	console.log(columns);
+	console.log(columns.indexOf('avg('));
+	var isAggregateQuery = false;
+
+	if (columns.indexOf('max(')>0) {
+		isAggregateQuery=true;
+	}
+	if (columns.indexOf('avg(')>0) {
+		isAggregateQuery=true;
+	}
+	if (columns.indexOf('min(')>0) {
+		isAggregateQuery=true;
+	}
+	if (columns.indexOf('sum(')>0) {
+		isAggregateQuery=true;
+	}
+	if (columns.indexOf('count(')>0) {
+		isAggregateQuery=true;
+	}
+
+
+	if (isAggregateQuery) {
 		query = 'select '+columns+' from '+did+'.'+tname+' group by '+col[0];
 	}else{
 		query = 'select '+columns+' from '+did+'.'+tname;
