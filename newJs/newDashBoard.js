@@ -439,51 +439,55 @@ $('#deleteC').click(function(event) {
 $('.keyword .searchBtn').click(function(event) {
 	$('#newStory .ok').attr('disabled', 'disabled');
 	var searchText = $('.keyword input').val();
-
+	var KWFinalObj = [];
 	if ($.trim(searchText).length!=0) {
 		//AJAX get data from KeyWord Group
-		var KWResultObj = [
-			{
-				did: 24,
-				dname: "vistest",
-				tname: "country"
-			},
-			{
-				did: 24,
-				dname: "vistest",
-				tname: "people"
-			},
-			{
-				did: 24,
-				dname: "vistest",
-				tname: "city"
-			},
-			{
-				did: 24,
-				dname: "vistest",
-				tname: "student"
-			}
-		];
+		var urlToKeyword = "http://54.174.121.196:7654/Join/"+searchText;
+		$.get(urlToKeyword, function(data) {
 			
-		$('#search-Resault').html('');
-		$('#search-Resault').html('<table id="keyword-table" class="stripe row-border hover order-column"><thead><tr><th>DB ID</th><th>DB Name</th><th>Table Name</th></tr></thead></table>');
-		$('#keyword-table').DataTable({
-			paging: false,
-			bFilter: false,
-			bInfo: false,
-			data: KWResultObj,
-			columns: [
-				{data: "did"},
-				{data: "dname"},
-				{data: "tname"}
-			]
-		});
-
-		$(document).on('click', '#keyword-table tr', function(event) {
-			event.preventDefault();
-			$('#newStory .selected').removeClass('selected');
-			$(this).addClass('selected');
-			$('#newStory .ok').removeAttr('disabled');
+			var KWResultObj = data.searchResult;
+			for (var i = 0; i < KWResultObj.length; i++) {
+				//console.log(KWResultObj[i]);
+				if (KWResultObj[i].ID.length!=0&&KWResultObj[i].table.length==0) {
+					// console.log('first');
+					// var urlToMeta = "http://54.152.26.131:7654/datasources/"+KWResultObj[i].ID;
+					// $.get(urlToMeta, function(data) {
+					// 	console.log("second");
+					// 	var did = data.id;
+					// 	var dname = data.dbName;
+					// 	var tables = data.tables;
+					// 	for (var i = 0; i < tables.length; i++) {
+					// 		var temp = {
+					// 			"ID":did,
+					// 			"database":dname,
+					// 			"table":tables[i].tableName
+					// 		};
+					// 		console.log(temp);
+					// 		KWFinalObj.push(temp);
+					// 		console.log(KWFinalObj);
+					// 	}
+					// });
+					alert("Please use DB id "+KWResultObj[i].ID+" to search again!");
+					$('.keyword input').val(KWResultObj[i].ID);
+				}else{
+					console.log(KWResultObj[i]);
+					KWFinalObj.push(KWResultObj[i]);
+				}
+			}	
+			
+			$('#search-Resault').html('');
+			$('#search-Resault').html('<table id="keyword-table" class="stripe row-border hover order-column"><thead><tr><th>DB ID</th><th>DB Name</th><th>Table Name</th></tr></thead></table>');
+			$('#keyword-table').DataTable({
+				paging: false,
+				bFilter: false,
+				bInfo: false,
+				data: KWFinalObj,
+				columns: [
+					{data: "ID"},
+					{data: "database"},
+					{data: "table"}
+				]
+			});	
 		});
 
 	}else{
@@ -491,6 +495,13 @@ $('.keyword .searchBtn').click(function(event) {
 	}
 	
 });
+
+$(document).on('click', '#keyword-table tr', function(event) {
+			event.preventDefault();
+			$('#newStory .selected').removeClass('selected');
+			$(this).addClass('selected');
+			$('#newStory .ok').removeAttr('disabled');
+		});
 
 //Create STORY
 $('#newStory .ok').click(function(event) {
@@ -658,5 +669,4 @@ function showTableChart(tableData, chartName){
 $('#clearChart').click(function(event) {
 	$('#chart_div').html('');
 });
-
 
