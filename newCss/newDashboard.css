@@ -16,6 +16,12 @@ tbody tr:hover{
 	float: left;
 }
 
+.tableContainer{
+	width: 600px;
+	height: 600px;
+	float: left;
+}
+
 #clearChart{
 	float: right;
 }

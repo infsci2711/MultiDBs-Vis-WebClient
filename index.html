@@ -271,9 +271,10 @@
 	        <h4 class="modal-title" id="exampleModalLabel">Create a New Chart</h4>
 	      </div>
 	      <div class="modal-body">
-		      <ul class="nav nav-tabs">
+		      <ul id="newChartNav" class="nav nav-tabs">
 		      	<li class="active"><a class="topNav">Columns</a></li>
 		      	<li><a class="topNav">Aggregation</a></li>
+		      	<li><a class="topNav">Table</a></li>
 		      </ul>
 	        <form>
 	          <div class="form-group">
@@ -292,7 +293,6 @@
 	            			<option value="bar">Bar Chart</option>
 	            			<option value="column">Column Chart</option>
 	            			<option value="area">Area Chart</option>
-	            			<option value="table">Table</option>
 	            			<!-- <option value="map">Map Chart</option> -->
 	            		</select>
 	            	</div>
@@ -332,6 +332,9 @@
 	            </div>
 	          </div>
 	        </form>
+	        <div id="tableShow" class="row" hidden>
+				<h4>Use table to show data in story</h4>
+	        </div>
 	      </div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

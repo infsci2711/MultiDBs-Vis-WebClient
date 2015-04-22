@@ -1,5 +1,6 @@
 var SERVER_IP = "http://54.173.71.235:7654";
 var USER_ID = 1;
+var urlToPresto = "http://54.174.80.167:7654/Query/"
 
 //USER->CANVAS
 //AJAX get all CANVAS about this USER
@@ -253,7 +254,7 @@ $('#newChart .ok').click(function(event) {
 	var isAggregateQuery = $('#aggForm').is(":visible"); 
 	//alert(selectedStoryId);
 	console.log(col1+','+col2+','+col3+': '+type);
-	if (type!='nothing') {
+	if (type!='nothing'&&($('#newChartNav .active a').html()!='Table')) {
 		//AJAX to SAVE this CHART	
 		var chartName = '';
 		var urlToSave = '';
@@ -285,7 +286,7 @@ $('#newChart .ok').click(function(event) {
 		}
 		
 		//AJAX to PRESTO to get DATA of COLUMNS
-		var urlToPresto = "http://54.174.80.167:7654/Query/"
+		
 		//see if it is an Aggregate Query
 		
 		var query = '';
@@ -326,6 +327,46 @@ $('#newChart .ok').click(function(event) {
 		
 		$("html, body").animate({ scrollTop: $(document).height() }, 1000);
 		$('#newChart').modal('hide');
+	}else if ($('#newChartNav .active a').html()=='Table') {
+		//alert("table show");
+		var urlToSave = SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+"table"+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+"All Columns";
+		var chartName;
+		$.getJSON(urlToSave, function(data) {
+			//alert(SERVER_IP+'/Visualization/chart/new/'+selectedStoryId+'/'+type+'/'+selectedDid+'/'+selectedDname+'/'+selectedTname+'/'+col1+','+col2);
+			$('#chart-table').DataTable().row.add({
+					"cid": data.cid,
+					"type": data.type,
+					"did": data.did,
+					"dname": data.dname,
+					"tname": data.tname,
+					"columns": data.columns
+				}).draw();
+			chartName = "Chart "+data.cid;
+		});
+
+		var query = 'select * from '+selectedDid+'.'+selectedTname;
+		console.log(query);
+		$.ajax({
+	        url: urlToPresto,
+	        type: 'PUT',
+	        dataType: 'json',
+	        data: '{"query": "'+query+'"}',
+	        contentType: "application/json",
+	        crossDomain: true,
+	        success: function(dataObj) {
+	            console.log(dataObj);
+	            showTableChart(dataObj, chartName);
+	            
+
+	            $("html, body").animate({ scrollTop: $(document).height() }, 1000);
+				$('#newChart').modal('hide');
+				$('#collapseFour').collapse('show');
+	        },
+	        error: function(data) {
+	           alert("Cannot get data from Presto!");
+	        }
+	    });
+
 	}else{
 		alert("Check you input!");
 		$('#newChart .modal-body').focus();
@@ -336,10 +377,19 @@ $('#newChart .ok').click(function(event) {
 $('.topNav').click(function(event) {
 	$('.topNav').parent().removeClass('active');
 	$(this).parent().addClass('active');
-	if ($(this).html()=='Aggregation') {
+	if ($(this).html()=='Table') {
+		$('#newChart form').hide("fast");
+		$('#tableShow').show("fast");
+	}else if ($(this).html()=='Aggregation') {
+		$('#newChart form').show("fast");
+		$('#columns-Result').show("fast");
 		$('#aggForm').show("fast");
+		$('#tableShow').hide("fast");
 	}else{
+		$('#newChart form').show("fast");
+		$('#columns-Result').show("fast");
 		$('#aggForm').hide("fast");
+		$('#tableShow').hide("fast");
 	}
 });
 
@@ -354,11 +404,10 @@ $('#openC').click(function(event) {
 	var type = $('#collapseThree .selected').children().eq(1).html();
 	
 	//AJAX send columns, did.tname to PRESTO to get DATA
-	var urlToPresto = "http://54.174.80.167:7654/Query/"
 	var query = '';
 	var col = columns.split(",");
 	console.log(columns);
-	console.log(columns.indexOf('avg('));
+	
 	var isAggregateQuery = false;
 
 	if (columns.indexOf('max(')>0) {
@@ -382,6 +431,10 @@ $('#openC').click(function(event) {
 		query = 'select '+columns+' from '+did+'.'+tname+' group by '+col[0];
 	}else{
 		query = 'select '+columns+' from '+did+'.'+tname;
+	}
+
+	if (type=='table') {
+		query = 'select * from '+did+'.'+tname;
 	}
 
 	console.log(query);
@@ -643,10 +696,7 @@ function showTableChart(tableData, chartName){
 	var array = [];
 	array.push(tableData.schema.columnNames);
 	for (var i = 0; i < tableData.data.length; i++) {
-		var innerArray = [];
-		innerArray.push(tableData.data[i].row[0]);
-		innerArray.push(Number(tableData.data[i].row[1]));
-		array.push(innerArray);
+		array.push(tableData.data[i].row); 
 	}
 	//console.log(array);
 	var data = google.visualization.arrayToDataTable(array);
@@ -655,7 +705,7 @@ function showTableChart(tableData, chartName){
 		showRowNumber: true
 	};
 
-	$('#chart_div').append('<div id="chart'+chartCounter+'" class="chartContainer"></div>');
+	$('#chart_div').append('<div id="chart'+chartCounter+'" class="tableContainer"></div>');
 	$('#chart'+chartCounter).draggable({
 		appendTo: '#chart_div',	
 		grid: [ 50, 20 ]
@@ -669,4 +719,3 @@ function showTableChart(tableData, chartName){
 $('#clearChart').click(function(event) {
 	$('#chart_div').html('');
 });
-
