@@ -1,6 +1,13 @@
-var SERVER_IP = "http://54.173.71.235:7654";
 var USER_ID = 1;
-var urlToPresto = "http://54.174.80.167:7654/Query/"
+
+var SERVER_IP = "http://54.173.71.235:7654";
+
+var Presto_IP = "http://54.174.80.167:7654";
+var urlToPresto = Presto_IP+"/Query/";
+
+var Meta_IP = "http://54.152.26.131:7654";
+
+var KeyWord_IP = "http://54.174.121.196:7654";
 
 //USER->CANVAS
 //AJAX get all CANVAS about this USER
@@ -218,7 +225,7 @@ $(document).on('click', '#collapseThree tbody tr', function(event) {
 //Create CHART - OPEN
 $('#createC').click(function(event) {
 	//AJAX to METASTORE to get ALL COLUMNS
-	var urlToMeta = "http://54.152.26.131:7654/datasources/"+selectedDid+"/"+selectedTname+"/columns";
+	var urlToMeta = Meta_IP+"/datasources/"+selectedDid+"/"+selectedTname+"/columns";
 	$.getJSON(urlToMeta, function(columnsJsonObj) {
 		console.log(columnsJsonObj);
 		$('#selectType').change(function(event) {
@@ -495,7 +502,7 @@ $('.keyword .searchBtn').click(function(event) {
 	var KWFinalObj = [];
 	if ($.trim(searchText).length!=0) {
 		//AJAX get data from KeyWord Group
-		var urlToKeyword = "http://54.174.121.196:7654/Join/"+searchText;
+		var urlToKeyword = KeyWord_IP+"/Join/"+searchText;
 		$.get(urlToKeyword, function(data) {
 			
 			var KWResultObj = data.searchResult;
