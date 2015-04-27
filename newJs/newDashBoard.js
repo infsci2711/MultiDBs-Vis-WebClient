@@ -1,13 +1,13 @@
 var USER_ID = 1;
 
-var SERVER_IP = "http://colfusion.exp.sis.pitt.edu/visualizationrest/";//"http://54.173.71.235:7654";
+var SERVER_IP = "http://colfusion.exp.sis.pitt.edu/visualizationrest";//"http://54.173.71.235:7654";
 
-var Presto_IP = "http://colfusion.exp.sis.pitt.edu/queryrest/"; //"http://54.174.80.167:7654";
+var Presto_IP = "http://colfusion.exp.sis.pitt.edu/queryrest"; //"http://54.174.80.167:7654";
 var urlToPresto = Presto_IP + "/Query/";
 
-var Meta_IP = "http://colfusion.exp.sis.pitt.edu/metastorerest/";//"http://54.152.26.131:7654";
+var Meta_IP = "http://colfusion.exp.sis.pitt.edu/metastorerest";//"http://54.152.26.131:7654";
 
-var KeyWord_IP = "http://colfusion.exp.sis.pitt.edu/keywordsearchg1rest/"; //"http://54.174.121.196:7654";
+var KeyWord_IP = "http://colfusion.exp.sis.pitt.edu/keywordsearchg1rest"; //"http://54.174.121.196:7654";
 
 //USER->CANVAS
 //AJAX get all CANVAS about this USER
